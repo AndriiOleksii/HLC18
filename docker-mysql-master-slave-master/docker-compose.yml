@@ -1,0 +1,67 @@
+version: '3'
+services:
+  mysql_master:
+    image: mysql:5.7
+    env_file:
+      - ./master/mysql_master.env
+    container_name: "mysql_master"
+    command: >
+          bash -c "
+          chmod 644 /etc/mysql/*.cnf
+          && /entrypoint.sh mysqld
+          "
+    restart: "no"
+    ports:
+      - 4406:3306
+    volumes:
+      - ./master/conf/my.cnf:/etc/mysql/my.cnf
+      - ./master/data:/var/lib/mysql
+    networks:
+      - overlay
+
+  mysql_slave_1:
+    image: mysql:5.7
+    env_file:
+      - ./slave_1/mysql_slave.env
+    container_name: "mysql_slave_1"
+    command: >
+          bash -c "
+          chmod 644 /etc/mysql/*.cnf
+          && /entrypoint.sh mysqld
+          "
+    restart: "no"
+    ports:
+      - 5506:3306
+    depends_on:
+      - mysql_master
+    volumes:
+      - ./slave_1/conf/my.cnf:/etc/mysql/my.cnf
+      - ./slave_1/data:/var/lib/mysql
+      #- ./slave_1/logs:/var/log/mysql
+    networks:
+      - overlay
+      
+  mysql_slave_2:
+    image: mysql:5.7
+    env_file:
+      - ./slave_2/mysql_slave.env
+    container_name: "mysql_slave_2"
+    command: >
+          bash -c "
+          chmod 644 /etc/mysql/*.cnf
+          && /entrypoint.sh mysqld
+          "
+    restart: "no"
+    ports:
+      - 6606:3306
+    depends_on:
+      - mysql_master
+    volumes:
+      - ./slave_2/conf/my.cnf:/etc/mysql/my.cnf
+      - ./slave_2/data:/var/lib/mysql
+    networks:
+      - overlay
+
+networks:
+  overlay:
+
